@@ -2,16 +2,21 @@
 <script src='https://d3js.org/d3.v5.min.js'></script>
 <style> circle {fill: lightblue; stroke: black;} </style>
 <body onload='init()'>
-<svg width=300 height=300>
+<svg width=700 height=700>
 </svg>
 <script>
 async function init() {
 const data = await d3.csv("https://flunky.github.io/cars2017.csv");
 
+// Color selection
+var bubbleColor = d3.scaleOrdinal()
+    .domain(["Electricity", "Gasoline", "Diesel"])
+    .range(["#66C2A5","#FC8D62","#E78AC3"]);
+
 // X range
-var x = d3.scaleLog().domain([10, 150]).range([0,200]);
+var x = d3.scaleLog().domain([10, 150]).range([0,600]);
 // Y range
-var y = d3.scaleLog().domain([10, 150]).range([200, 0]);
+var y = d3.scaleLog().domain([10, 150]).range([600, 0]);
 
 // Draw circle scatter plot
 d3.select("svg")
@@ -23,19 +28,27 @@ d3.select("svg")
   .append("circle")
       .attr("cx", function (d) { return x(d.AverageCityMPG); } )
       .attr("cy", function (d) { return y(d.AverageHighwayMPG); } )
-      .attr("r", function (d) { return (parseInt(d.EngineCylinders) + 2); } )
+      .attr("r", function (d) { return Math.sqrt(d.AverageHighwayMPG); } )
+      .style("fill", function (d) { return bubbleColor(d.Fuel); } )
 
 //Add Y axis
 d3.select("svg")
   .append("g")
   .attr("transform","translate(50,50)")
-  .call(d3.axisLeft(y).tickValues([10,20,50,100]).tickFormat(d3.format("~s"))
-       );
+  .call(d3.axisLeft(y).tickValues([10,20,50,100]).tickFormat(d3.format("~s")))
+    .append('text') // y-axis Label
+      .attr('class','label')
+      .attr('transform','rotate(-90)')
+      .attr('x',0)
+      .attr('y',5)
+      .attr('dy','.71em')
+      .style('text-anchor','end')
+      .text('Annualized Return')
 
 // Add X axis
 d3.select("svg")
   .append("g")
-  .attr("transform","translate(50,250)")
+  .attr("transform","translate(50,650)")
   .call(d3.axisBottom(x).tickValues([10,20,50,100]).tickFormat(d3.format("~s"))
        );
 
